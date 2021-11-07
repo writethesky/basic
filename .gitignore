@@ -1,0 +1,6 @@
+.idea
+proto
+pb
+doc
+config/*
+!config.template.yaml
