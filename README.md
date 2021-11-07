@@ -9,4 +9,4 @@ The server contains the following services
 `make generate`
 
 ### Run Server
-`make run`
+`make run `
