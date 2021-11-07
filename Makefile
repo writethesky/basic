@@ -26,9 +26,10 @@ fetch-proto: clean
 	@echo {\"type\": \"${FETCH_SOURCE_TYPE}\", \"site\": \"${FETCH_SOURCE_SITE}\"}
 ifeq ($(FETCH_SOURCE_TYPE),$(shell echo $(FETCH_SOURCE_TYPE_REMOTE)))
 	@echo "Ready to pull the remote code..."
+	git clone ${FETCH_SOURCE_SITE} $(PROTO_DIRECTORY)
 else ifeq ($(FETCH_SOURCE_TYPE),$(shell echo $(FETCH_SOURCE_TYPE_LOCAL)))
 	@echo "Ready to copy local code..."
-	cp -r ../basic-proto/* proto/
+	cp -r ${FETCH_SOURCE_SITE}/* $(PROTO_DIRECTORY)/
 endif
 generate: fetch-proto
 	buf generate ${PROTO_DIRECTORY}
