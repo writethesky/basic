@@ -17,7 +17,6 @@ import (
 
 type configEntity struct {
 	MySQL       mysqlEntity  `yaml:"mysql"`
-	HTTPServer  serverEntity `yaml:"http_server"`
 	TokenServer serverEntity `yaml:"token_server"`
 	UserServer  serverEntity `yaml:"user_server"`
 	Redis       redisEntity  `yaml:"redis"`
