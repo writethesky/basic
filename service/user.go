@@ -37,7 +37,7 @@ func (UserService) Register(_ context.Context, in *v1.RegisterRequest) (_ *empty
 	}
 
 	if isOk := utility.ValidateStringRange(in.Password, passwordMinLength, passwordMaxLength); !isOk {
-		return nil, status.Errorf(codes.InvalidArgument, "minimum length of the password is %d and maximum length of the password is %d", usernameMinLength, usernameMaxLength)
+		return nil, status.Errorf(codes.InvalidArgument, "minimum length of the password is %d and maximum length of the password is %d", passwordMinLength, passwordMaxLength)
 	}
 
 	if !utility.ValidateStringHasTypes(in.Password, utility.GenerateTypeNumber|utility.GenerateTypeLowerLetter|utility.GenerateTypeUpperLetter|utility.GenerateTypeSpecialCharacter) {
