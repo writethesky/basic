@@ -61,7 +61,7 @@ func (UserService) Register(_ context.Context, in *v1.RegisterRequest) (_ *empty
 	if nil != err {
 		return nil, status.Errorf(codes.Unavailable, err.Error())
 	}
-	return nil, nil
+	return new(emptypb.Empty), nil
 }
 
 func encryptPassword(password, salt string) string {
