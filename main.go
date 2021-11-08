@@ -42,21 +42,21 @@ func main() {
 }
 
 func runTokenServer() {
-	runRPCServer(internal.Config.TokenServer.Port, registerTokenServiceServer)
+	runRPCServer(internal.Config.TokenServer.Host, internal.Config.TokenServer.Port, registerTokenServiceServer)
 }
 
 func runUserServer() {
-	runRPCServer(internal.Config.UserServer.Port, registerUserServiceServer)
+	runRPCServer(internal.Config.UserServer.Host, internal.Config.UserServer.Port, registerUserServiceServer)
 }
 
-func runRPCServer(port int, registerType RegisterType) {
+func runRPCServer(host string, port int, registerType RegisterType) {
 
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", host, port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	log.Printf("Listening and serving RPC(%s) on :%d", registerType, port)
+	log.Printf("Listening and serving RPC(%s) on %s:%d", registerType, host, port)
 	var opts []grpc.ServerOption
 
 	grpcServer := grpc.NewServer(opts...)
