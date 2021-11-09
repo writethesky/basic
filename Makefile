@@ -18,6 +18,7 @@ install-tools:
 	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.6.0
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0
+	go get github.com/vektra/mockery/v2/.../
 
 clean:
 	rm -rf ${PROTO_DIRECTORY} ${PROTO_TARGET_DIRECTORY}
@@ -33,6 +34,7 @@ else ifeq ($(FETCH_SOURCE_TYPE),$(shell echo $(FETCH_SOURCE_TYPE_LOCAL)))
 endif
 generate: fetch-proto
 	buf generate ${PROTO_DIRECTORY}
+	mockery --all --output ./mock
 
 run:
 	go run main.go

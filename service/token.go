@@ -17,10 +17,18 @@ import (
 
 type TokenService struct {
 	tokenV1.UnimplementedTokenServiceServer
+	userServiceClient userV1.UserServiceClient
 }
 
-func NewTokenService() *TokenService {
-	return new(TokenService)
+func NewTokenService(doubles ...interface{}) *TokenService {
+	tokenService := new(TokenService)
+	tokenService.userServiceClient = internal.NewUserServiceClient()
+	for _, double := range doubles {
+		if userServiceClientDouble, isOk := double.(userV1.UserServiceClient); isOk {
+			tokenService.userServiceClient = userServiceClientDouble
+		}
+	}
+	return tokenService
 }
 
 const (
@@ -29,16 +37,13 @@ const (
 	tokenGenerateType = utility.GenerateTypeNumber | utility.GenerateTypeUpperLetter | utility.GenerateTypeLowerLetter
 )
 
-var userServiceClient userV1.UserServiceClient
-
 func (receiver TokenService) Apply(ctx context.Context, in *tokenV1.ApplyRequest) (*tokenV1.ApplyResponse, error) {
 
 	if in.Username == "" || in.Password == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "username and password is required")
 	}
 	// check username and password is right
-	userServiceClient = internal.NewUserServiceClient()
-	res, err := userServiceClient.CheckPassword(ctx, &userV1.CheckPasswordRequest{
+	res, err := receiver.userServiceClient.CheckPassword(ctx, &userV1.CheckPasswordRequest{
 		Username: in.Username,
 		Password: in.Password,
 	})

@@ -1,7 +1,7 @@
 package service
 
 import (
-	"basic/internal"
+	mocks "basic/mock"
 	v1 "basic/pb/token/v1"
 	userV1 "basic/pb/user/v1"
 	"basic/repository/dao"
@@ -11,8 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/emptypb"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/agiledragon/gomonkey/v2"
 
@@ -31,16 +30,21 @@ func TestTokenApplyWithoutUsernameAndPassword(t *testing.T) {
 }
 
 func TestTokenApplyExceptRight(t *testing.T) {
+	userServiceClient := new(mocks.UserServiceClient)
+	userServiceClient.On("CheckPassword", mock.Anything, mock.Anything).Return(&userV1.CheckPasswordResponse{
+		IsOk:   true,
+		UserId: 1,
+	}, nil)
 	patches := gomonkey.ApplyFunc(dao.GetToken, func(token string) (userID int, username string, expire time.Time, err error) {
 		err = errors.New("")
 		return
 	}).ApplyFunc(dao.SaveToken, func(token string, expire time.Duration, userID int, username string) error {
 		return nil
-	}).ApplyFunc(internal.NewUserServiceClient, func() userV1.UserServiceClient {
-		return new(_userServiceClient)
 	})
+
 	defer patches.Reset()
 
+	tokenService := NewTokenService(userServiceClient)
 	res, err := tokenService.Apply(context.Background(), &v1.ApplyRequest{
 		Username: "admin",
 		Password: "123456",
@@ -121,18 +125,4 @@ func TestTokenVerifyWithRightToken(t *testing.T) {
 	assert.Equal(t, int64(userID), res.UserId)
 	assert.Equal(t, username, res.Username)
 
-}
-
-type _userServiceClient struct {
-}
-
-func (c *_userServiceClient) Register(ctx context.Context, in *userV1.RegisterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	return nil, nil
-}
-
-func (c *_userServiceClient) CheckPassword(ctx context.Context, in *userV1.CheckPasswordRequest, opts ...grpc.CallOption) (*userV1.CheckPasswordResponse, error) {
-	return &userV1.CheckPasswordResponse{
-		IsOk:   true,
-		UserId: 1,
-	}, nil
 }

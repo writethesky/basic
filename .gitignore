@@ -1,6 +1,7 @@
 .idea
 proto
 pb
+mock
 doc
 config/*
 !config.template.yaml
