@@ -90,6 +90,15 @@ func (UserService) SetPassword(_ context.Context, in *userV1.SetPasswordRequest)
 	if 0 == in.UserId {
 		return new(emptypb.Empty), status.Errorf(codes.InvalidArgument, "The user ID cannot be 0")
 	}
+
+	if isOk := utility.ValidateStringRange(in.Password, passwordMinLength, passwordMaxLength); !isOk {
+		return new(emptypb.Empty), status.Errorf(codes.InvalidArgument, "minimum length of the password is %d and maximum length of the password is %d", passwordMinLength, passwordMaxLength)
+	}
+
+	if !utility.ValidateStringHasTypes(in.Password, utility.GenerateTypeNumber|utility.GenerateTypeLowerLetter|utility.GenerateTypeUpperLetter|utility.GenerateTypeSpecialCharacter) {
+		return new(emptypb.Empty), status.Errorf(codes.InvalidArgument, "The password must contain digits, uppercase letters, lowercase letters, and special characters")
+	}
+
 	salt := utility.GenerateRandomString(6, utility.GenerateTypeNumber|utility.GenerateTypeLowerLetter|utility.GenerateTypeUpperLetter)
 	in.Password = encryptPassword(in.Password, salt)
 	err := dao.SetPassword(in.UserId, in.Password, salt)
