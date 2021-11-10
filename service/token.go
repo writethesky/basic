@@ -68,7 +68,7 @@ func (receiver TokenService) Parse(_ context.Context, in *tokenV1.ParseRequest) 
 	}
 	userID, username, expire, err := dao.GetToken(in.Token)
 	if nil != err {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+		return nil, status.Errorf(codes.NotFound, "token not found")
 	}
 	return &tokenV1.ParseResponse{
 		UserId:   int64(userID),
