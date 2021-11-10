@@ -96,7 +96,7 @@ func TestTokenVerifyWithNotExistOrExpiredToken(t *testing.T) {
 		Token: "abc",
 	})
 	assert.NotNil(t, err, res)
-	assert.Equal(t, codes.FailedPrecondition, status.Code(err), err)
+	assert.Equal(t, codes.NotFound, status.Code(err), err)
 }
 
 func TestTokenVerifyWithRightToken(t *testing.T) {

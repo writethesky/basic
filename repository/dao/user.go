@@ -22,3 +22,10 @@ func GetUserInfo(username string) (userInfo entity.User, err error) {
 	err = internal.DB.First(&userInfo, "username = ?", username).Error
 	return
 }
+
+func SetPassword(id int64, password, salt string) error {
+	return internal.DB.Model(&entity.User{}).Where("id=?", id).Updates(entity.User{
+		Password: password,
+		Salt:     salt,
+	}).Error
+}

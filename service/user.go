@@ -1,7 +1,7 @@
 package service
 
 import (
-	v1 "basic/pb/user/v1"
+	userV1 "basic/pb/user/v1"
 	"basic/repository/dao"
 	"basic/repository/entity"
 	"basic/utility"
@@ -13,7 +13,7 @@ import (
 )
 
 type UserService struct {
-	v1.UnimplementedUserServiceServer
+	userV1.UnimplementedUserServiceServer
 }
 
 const (
@@ -27,7 +27,7 @@ func NewUserService() *UserService {
 	return new(UserService)
 }
 
-func (UserService) Register(_ context.Context, in *v1.RegisterRequest) (_ *emptypb.Empty, err error) {
+func (UserService) Register(_ context.Context, in *userV1.RegisterRequest) (_ *emptypb.Empty, err error) {
 	if "" == in.Username || "" == in.Password {
 		return nil, status.Errorf(codes.InvalidArgument, "username and password are required")
 	}
@@ -68,7 +68,7 @@ func encryptPassword(password, salt string) string {
 	return utility.EncryptMd5(utility.EncryptMd5(password) + salt)
 }
 
-func (UserService) CheckPassword(_ context.Context, in *v1.CheckPasswordRequest) (*v1.CheckPasswordResponse, error) {
+func (UserService) CheckPassword(_ context.Context, in *userV1.CheckPasswordRequest) (*userV1.CheckPasswordResponse, error) {
 
 	userInfo, err := dao.GetUserInfo(in.Username)
 	if nil != err {
@@ -76,12 +76,25 @@ func (UserService) CheckPassword(_ context.Context, in *v1.CheckPasswordRequest)
 	}
 
 	if encryptPassword(in.Password, userInfo.Salt) == userInfo.Password {
-		return &v1.CheckPasswordResponse{
+		return &userV1.CheckPasswordResponse{
 			IsOk:   true,
 			UserId: int64(userInfo.ID),
 		}, nil
 	}
-	return &v1.CheckPasswordResponse{
+	return &userV1.CheckPasswordResponse{
 		IsOk: false,
 	}, nil
+}
+
+func (UserService) SetPassword(_ context.Context, in *userV1.SetPasswordRequest) (*emptypb.Empty, error) {
+	if 0 == in.UserId {
+		return new(emptypb.Empty), status.Errorf(codes.InvalidArgument, "The user ID cannot be 0")
+	}
+	salt := utility.GenerateRandomString(6, utility.GenerateTypeNumber|utility.GenerateTypeLowerLetter|utility.GenerateTypeUpperLetter)
+	in.Password = encryptPassword(in.Password, salt)
+	err := dao.SetPassword(in.UserId, in.Password, salt)
+	if nil != err {
+		return new(emptypb.Empty), status.Errorf(codes.Unavailable, err.Error())
+	}
+	return new(emptypb.Empty), nil
 }
